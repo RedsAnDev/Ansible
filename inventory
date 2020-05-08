@@ -1,0 +1,8 @@
+[raspberry]
+192.168.2.100
+
+[basecamp]
+basecamp.local
+
+[centos]
+192.168.33.20

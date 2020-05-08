@@ -1,0 +1,30 @@
+---
+# tasks file for redsandev.raspberry
+- hosts: raspberry
+  become: true
+  tasks:
+    - name: Add repo
+      apt_repository: repo='ppa:ondrej/php'
+    - name: Install all necessary packages
+      apt: name{{item}} state=present 
+      with_items:
+          - php
+          - php-fpm
+          - php-mysql
+          - php-xml
+          - apache2
+          - mysql-server-5.6
+          - python3-mysqldb
+    - name: Remove apache2
+      apt: name=apache2 state=absent
+    - name: create mysql database
+      mysql_db:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        state: present
+        name: db_name_test
+    - name: Update root password
+      mysql_user: name=root host={{item}} password={{mysql_new_root_pass.stdout}} state=present
+      with_items:
+        - localhost
+        - ::1
+        - 127.0.0.1

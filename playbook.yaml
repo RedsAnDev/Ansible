@@ -1,0 +1,12 @@
+---
+# Postgres on nginx centos
+- hosts: basecamp
+  become: yes
+  roles:
+#    - redsandev.nginx
+    - geerlingguy.postgresql
+  vars_files:
+    - 'redsandev.postgres/vars/main.yml'
+  tasks:
+    - name: Ping di prova
+      ping:

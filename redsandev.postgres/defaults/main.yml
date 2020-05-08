@@ -1,0 +1,70 @@
+---
+postgres__name: postgres
+postgres__image: postgres:latest
+postgres__port: 5432
+postgres__superuser_name: postgres
+postgres__superuser_password: postgres
+postgres__remove_existing_container: yes
+postgres__pull_image: yes
+postgres__file_volumes: []
+postgres__network_mode:
+postgres__networks: []
+postgres__env: {}
+postgres__log_driver: json-file
+postgres__log_options:
+postgres__slave: no
+postgres__master_host: localhost
+postgres__master_port: 5432
+postgres__wait_for_start: no
+postgres__remove_existing_home_dir: no
+postgres__pg_hba_conf: |
+  # This file is managed by Ansible, all changes will be lost.
+  # TYPE  DATABASE        USER            ADDRESS                 METHOD
+  local   all             all                                     trust
+  host    all             all             127.0.0.1/32            trust
+  host    all             all             ::1/128                 trust
+  local   replication     all                                     trust
+  host    replication     all             127.0.0.1/32            trust
+  host    replication     all             ::1/128                 trust
+  host    all             all             all                     md5
+  host    replication     {{ postgres__superuser_name }}        all                     md5
+postgres__postgresql_conf: |
+  # This file is managed by Ansible, all changes will be lost.
+  listen_addresses = '*'
+  max_connections = 100
+  shared_buffers = 128MB
+  dynamic_shared_memory_type = posix
+  max_wal_size = 1GB
+  min_wal_size = 80MB
+  log_timezone = 'UTC'
+  datestyle = 'iso, mdy'
+  timezone = 'UTC'
+  lc_messages = 'en_US.utf8'
+  lc_monetary = 'en_US.utf8'
+  lc_numeric = 'en_US.utf8'
+  lc_time = 'en_US.utf8'
+  default_text_search_config = 'pg_catalog.english'
+postgres__recovery_conf: |
+  # This file is managed by Ansible, all changes will be lost.
+  standby_mode             = 'on'
+  primary_conninfo         = 'host={{ postgres__master_host }} port={{ postgres__master_port }} user={{ postgres__superuser_name }} password={{ postgres__superuser_password }}'
+  trigger_file             = '/var/lib/postgresql/data/promote_to_master'
+  recovery_target_timeline = 'latest'
+# Don't change
+postgres__home: "/var/lib/postgresql/data"
+postgres__default_env:
+  POSTGRES_USER: "{{ postgres__superuser_name }}"
+  POSTGRES_PASSWORD: "{{ postgres__superuser_password }}"
+# questo potrebbe non servirmi
+postgres__directories:
+- path: "{{ postgres__home }}"
+  mode: "0700"
+- path: "{{ postgres__home }}/data"
+  owner: 70
+  group: 70
+- path: "{{ postgres__home }}/conf"
+postgres__ports:
+- "{{ postgres__port }}:5432"
+postgres__directory_volumes:
+- "{{ postgres__home }}/conf:/etc/postgresql"
+- "{{ postgres__home }}/data:/var/lib/postgresql/data"

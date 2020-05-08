@@ -1,0 +1,36 @@
+---
+# tasks file for redsandev.postgres
+- name: update and upgrade anything
+  yum:
+    name: '*'
+    state: latest
+- name: Install nginx
+  yum:
+    name: '{{ packages }}'
+    state: latest
+  vars:
+    packages:
+      - nginx
+- name: Install from official repository
+  yum:
+    name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+- name: Install all services
+  yum:
+    state: present
+    name: '{{ packages }}'
+  vars:
+    packages:
+      - postgresql12
+      - postgresql12-server
+- name: Init database
+  become: yes
+  shell: /usr/pgsql-12/bin/postgresql-12-setup initdb
+  ignore_errors: True
+- name: enable service
+  systemd:
+    name: postgresql-12
+    enabled: True
+- name: start service
+  systemd:
+    name: postgresql-12
+    state: started
